@@ -37,6 +37,7 @@ class CanvasImage {
         const canvasImage = new CanvasImage(size)
         canvasImage.draw()
         canvasImage.attachTo(img)
+        return canvasImage
     }
 }
 
@@ -110,5 +111,62 @@ class Animator {
             this.animated = false
             clearInterval(this.interval)
         }
+    }
+}
+
+class YTPlayPauseButton {
+
+    div : HTMLDivElement = document.createElement('div')
+    img : HTMLImageElement = document.createElement('img')
+    pauseImage : CanvasImage
+    playImage : CanvasImage
+    animator : Animator = new Animator()
+    state : State = new State()
+
+    constructor(private w : number, private h : number, elem : HTMLElement) {
+        this.initElements(elem)
+    }
+
+    initElements(elem : HTMLElement) {
+        const divSizeFactor = 20
+        const imageSizeFactor = 45
+        const divSize = Math.min(this.w, this.h) / divSizeFactor
+        const imageSize = Math.min(this.w, this.h) / imageSizeFactor
+        this.div.style.position = 'absolute'
+        this.div.style.left = `${this.w / 2 - divSize / 2}px`
+        this.div.style.top = `${this.h / 2 - divSize / 2}px`
+        this.div.style.width = `${divSize}px`
+        this.div.style.height = `${divSize}px`
+        this.div.style.background = '#E1E1E1'
+        this.img.style.position = 'absolute'
+        this.img.style.left = `${divSize / 2 - imageSize / 2}px`
+        this.img.style.top = `${divSize / 2 - imageSize / 2}px`
+        this.img.width = imageSize
+        this.img.height = imageSize
+        this.pauseImage = PauseImage.create(imageSize, this.img)
+        this.playImage = PlayImage.create(imageSize, this.img)
+        elem.appendChild(this.div)
+        this.div.appendChild(this.img)
+
+    }
+    updateParams() {
+        const dir : number = this.state.dir
+        const sc : number = (1 - dir) / 2 + dir * this.state.scale
+        this.div.style.opacity = `${1 - sc}`
+        this.div.style.transform = `scaleZ(${sc})`
+    }
+
+    start() {
+        this.state.startUpdating(() => {
+            const canvasImage : CanvasImage = this.state.dir == 1 ? this.playImage : this.pauseImage
+            canvasImage.attachTo(this.img)
+            this.animator.start(() => {
+                this.updateParams()
+                this.state.update(() => {
+                    this.animator.stop()
+                    this.updateParams()
+                })
+            })
+        })
     }
 }
