@@ -50,3 +50,18 @@ class PauseImage extends CanvasImage {
         }
     }
 }
+
+class PlayImage extends CanvasImage {
+
+    draw() {
+        const context : CanvasRenderingContext2D = this.context
+        const size : number = this.size
+        context.fillStyle = 'white'
+        context.beginPath()
+        context.moveTo(0, 0)
+        context.lineTo(0, size)
+        context.lineTo(size, size / 2)
+        context.lineTo(0, 0)
+        context.fill()
+    }
+}
