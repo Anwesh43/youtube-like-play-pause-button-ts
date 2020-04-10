@@ -170,3 +170,8 @@ class YTPlayPauseButton {
         })
     }
 }
+
+const ytPlayPauseButton = new YTPlayPauseButton(dimensionController.w, dimensionController.h, document.body)
+window.onmousedown = () => {
+    ytPlayPauseButton.start()
+}
