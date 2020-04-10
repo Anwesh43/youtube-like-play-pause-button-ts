@@ -1,3 +1,18 @@
+class DimensionController {
+    w : number = window.innerWidth
+    h : number = window.innerHeight
+
+    enableResize() {
+        window.onresize = () => {
+            this.w = window.innerWidth
+            this.h = window.innerHeight
+        }
+    }
+}
+
+const dimensionController = new DimensionController()
+dimensionController.enableResize()
+
 class CanvasImage {
 
     canvas : HTMLCanvasElement = document.createElement('canvas')
@@ -29,7 +44,7 @@ class PauseImage extends CanvasImage {
         this.context.fillStyle = 'white'
         for (var i = 0; i < 2; i++) {
             this.context.save()
-            this.context.translate((w - barW) * i, 0)
+            this.context.translate((this.size - barW) * i, 0)
             this.context.fillRect(0, 0, barW, this.size)
             this.context.restore()
         }
