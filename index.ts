@@ -13,6 +13,8 @@ class DimensionController {
 const dimensionController = new DimensionController()
 dimensionController.enableResize()
 
+const scGap : number = 0.02
+
 class CanvasImage {
 
     canvas : HTMLCanvasElement = document.createElement('canvas')
@@ -63,5 +65,29 @@ class PlayImage extends CanvasImage {
         context.lineTo(size, size / 2)
         context.lineTo(0, 0)
         context.fill()
+    }
+}
+
+class State {
+
+    scale : number = 0
+    dir : number = 0
+    prevScale : number = 0
+
+    update(cb : Function) {
+        this.scale += scGap * this.dir
+        if (Math.abs(this.scale - this.prevScale) > 1) {
+            this.scale = this.prevScale + this.dir
+            this.dir = 0
+            this.prevScale = this.scale
+            cb()
+        }
+    }
+
+    startUpdating(cb : Function) {
+        if (this.dir == 0) {
+            this.dir = 1 - 2 * this.prevScale
+            cb()
+        }
     }
 }
