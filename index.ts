@@ -13,8 +13,8 @@ class DimensionController {
 const dimensionController = new DimensionController()
 dimensionController.enableResize()
 
-const scGap : number = 0.02
-const delay : number = 30
+const scGap : number = 0.01
+const delay : number = 10
 
 class CanvasImage {
 
@@ -22,7 +22,9 @@ class CanvasImage {
     context : CanvasRenderingContext2D
 
     constructor(protected size : number) {
-
+        this.canvas.width = this.size
+        this.canvas.height = this.size
+        this.context = this.canvas.getContext('2d')
     }
 
     draw() {
@@ -44,7 +46,7 @@ class CanvasImage {
 class PauseImage extends CanvasImage {
 
     draw() {
-        const barW : number = this.size / 20
+        const barW : number = this.size / 10
         this.context.fillStyle = 'white'
         for (var i = 0; i < 2; i++) {
             this.context.save()
@@ -52,6 +54,13 @@ class PauseImage extends CanvasImage {
             this.context.fillRect(0, 0, barW, this.size)
             this.context.restore()
         }
+    }
+
+    static create(size : number, img : HTMLImageElement) {
+        const canvasImage = new PauseImage(size)
+        canvasImage.draw()
+        canvasImage.attachTo(img)
+        return canvasImage
     }
 }
 
@@ -67,6 +76,14 @@ class PlayImage extends CanvasImage {
         context.lineTo(size, size / 2)
         context.lineTo(0, 0)
         context.fill()
+        console.log("play", size)
+    }
+
+    static create(size : number, img : HTMLImageElement) {
+        const canvasImage = new PlayImage(size)
+        canvasImage.draw()
+        canvasImage.attachTo(img)
+        return canvasImage
     }
 }
 
@@ -118,8 +135,8 @@ class YTPlayPauseButton {
 
     div : HTMLDivElement = document.createElement('div')
     img : HTMLImageElement = document.createElement('img')
-    pauseImage : CanvasImage
-    playImage : CanvasImage
+    pauseImage : PlayImage
+    playImage : PauseImage
     animator : Animator = new Animator()
     state : State = new State()
 
@@ -128,8 +145,8 @@ class YTPlayPauseButton {
     }
 
     initElements(elem : HTMLElement) {
-        const divSizeFactor = 20
-        const imageSizeFactor = 45
+        const divSizeFactor = 7
+        const imageSizeFactor = 14
         const divSize = Math.min(this.w, this.h) / divSizeFactor
         const imageSize = Math.min(this.w, this.h) / imageSizeFactor
         this.div.style.position = 'absolute'
@@ -137,7 +154,7 @@ class YTPlayPauseButton {
         this.div.style.top = `${this.h / 2 - divSize / 2}px`
         this.div.style.width = `${divSize}px`
         this.div.style.height = `${divSize}px`
-        this.div.style.background = '#E1E1E1'
+        this.div.style.background = '#b0bec5'
         this.img.style.position = 'absolute'
         this.img.style.left = `${divSize / 2 - imageSize / 2}px`
         this.img.style.top = `${divSize / 2 - imageSize / 2}px`
@@ -145,26 +162,33 @@ class YTPlayPauseButton {
         this.img.height = imageSize
         this.pauseImage = PauseImage.create(imageSize, this.img)
         this.playImage = PlayImage.create(imageSize, this.img)
+        //this.playImage.draw()
+        //this.pauseImage.draw()
         elem.appendChild(this.div)
         this.div.appendChild(this.img)
+        this.div.style.display = 'none'
+        this.div.style.borderRadius = '50%'
 
     }
     updateParams() {
         const dir : number = this.state.dir
         const sc : number = (1 - dir) / 2 + dir * this.state.scale
-        this.div.style.opacity = `${1 - sc}`
-        this.div.style.transform = `scaleZ(${sc})`
+        this.div.style.opacity = `${1 - 0.7 * sc}`
+        this.div.style.transform = `scale(${1 + sc}, ${1 + sc})`
     }
 
     start() {
         this.state.startUpdating(() => {
             const canvasImage : CanvasImage = this.state.dir == 1 ? this.playImage : this.pauseImage
             canvasImage.attachTo(this.img)
+            this.div.style.display = 'block'
+            this.div.style.transform = 'scale(1, 1)'
             this.animator.start(() => {
                 this.updateParams()
                 this.state.update(() => {
                     this.animator.stop()
-                    this.updateParams()
+                    //this.updateParams()
+                    this.div.style.display = 'none'
                 })
             })
         })
